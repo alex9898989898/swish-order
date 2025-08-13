@@ -13,12 +13,10 @@
   <h1 id="orderNumber">-</h1>
 
   <script>
-    // Dynamisk WebSocket URL beroende på om vi kör lokalt eller på Render
-    const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-    const wsUrl = `${protocol}://${location.host}`;
-    const ws = new WebSocket(wsUrl);
+    // Anslut till WebSocket på Render
+    const ws = new WebSocket("wss://swish-order.onrender.com");
 
-    ws.onopen = () => console.log("WebSocket ansluten!");
+    ws.onopen = () => console.log("WebSocket ansluten till Render!");
     ws.onerror = (err) => console.log("WebSocket fel:", err);
 
     ws.onmessage = (event) => {
