@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>Beställ med Swish</title>
+  <style>
+    body { font-family: Arial; text-align: center; margin-top: 50px; }
+    input { margin: 5px; padding: 10px; width: 200px; }
+    button { padding: 10px 20px; }
+    #latestOrder { margin-top: 20px; font-size: 1.5em; color: green; }
+  </style>
+</head>
+<body>
+  <h1>Beställning</h1>
+  <input type="number" id="amount" placeholder="Belopp (kr)" />
+  <input type="text" id="message" placeholder="Meddelande" />
+  <button onclick="placeOrder()">Betala med Swish</button>
+
+  <div id="latestOrder">Senaste order: -</div>
+
+  <script>
+    // Dynamisk WebSocket URL beroende på om vi kör lokalt eller på Render
+    const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+    const wsUrl = `${protocol}://${location.host}`;
+    const ws = new WebSocket(wsUrl);
+
+    ws.onmessage = (event) => {
+      const orderNumber = event.data;
+      document.getElementById("latestOrder").innerText = `Ny order: ${orderNumber}`;
+    };
+
+    ws.onopen = () => {
+      console.log("WebSocket ansluten!");
+    };
+
+    ws.onerror = (error) => {
+      console.log("WebSocket fel:", error);
+    };
+
+    async function placeOrder() {
+      const amount = document.getElementById("amount").value;
+      const message = document.getElementById("message").value;
+
+      if (!amount) {
+        alert("Ange ett belopp!");
+        return;
+      }
+
+      try {
+        const res = await fetch("/order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount, message })
+        });
+
+        const data = await res.json();
+        alert(`Order skickad! Ordernummer: ${data.orderNumber}`);
+      } catch (err) {
+        alert("Fel vid beställning, försök igen!");
+        console.error(err);
+      }
+    }
+  </script>
+</body>
+</html>

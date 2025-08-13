@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>Order-skärm</title>
+  <style>
+    body { font-family: Arial; text-align: center; margin-top: 50px; }
+    h1 { font-size: 5em; }
+  </style>
+</head>
+<body>
+  <h2>Senaste ordernummer</h2>
+  <h1 id="orderNumber">-</h1>
+
+  <script>
+    // Dynamisk WebSocket URL beroende på om vi kör lokalt eller på Render
+    const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+    const wsUrl = `${protocol}://${location.host}`;
+    const ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => console.log("WebSocket ansluten!");
+    ws.onerror = (err) => console.log("WebSocket fel:", err);
+
+    ws.onmessage = (event) => {
+      const orderNumber = event.data;
+      document.getElementById("orderNumber").innerText = `Ny order: ${orderNumber}`;
+    };
+  </script>
+</body>
+</html>
