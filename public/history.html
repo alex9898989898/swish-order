@@ -4,34 +4,14 @@
   <meta charset="UTF-8">
   <title>Order History</title>
   <style>
-    body { 
-      font-family: Arial, sans-serif; 
-      text-align: center; 
-      margin: 20px; 
-    }
-    h1 { 
-      font-size: 3em; 
-    }
-    ul { 
-      list-style-type: none; 
-      padding: 0; 
-      max-width: 600px; 
-      margin: auto; 
-    }
-    li { 
-      font-size: 1.5em; 
-      padding: 10px; 
-      border-bottom: 1px solid #ccc; 
-    }
+    body { font-family: Arial; text-align: center; margin: 20px; }
+    h1 { font-size: 3em; }
+    ul { list-style-type: none; padding: 0; max-width: 600px; margin: auto; }
+    li { font-size: 1.5em; padding: 10px; border-bottom: 1px solid #ccc; }
     .order-number { font-weight: bold; color: #007bff; }
     .amount { color: green; }
     .message { color: #555; font-style: italic; }
-    #clearAllBtn { 
-      font-size: 1em; 
-      padding: 10px 20px; 
-      margin-bottom: 20px; 
-      cursor: pointer; 
-    }
+    #clearAllBtn { font-size: 1em; padding: 10px 20px; margin-bottom: 20px; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -43,23 +23,18 @@
     const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
     const ws = new WebSocket(`${protocol}://${location.host}/?type=history`);
 
-    ws.onopen = () => console.log("WebSocket ansluten till servern (history)!");
+    ws.onopen = () => console.log("WebSocket ansluten (history)!");
     ws.onerror = (err) => console.error("WebSocket fel:", err);
 
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
 
-        // If server tells us to clear the history
         if(data.type === "clear") {
           document.getElementById("historyList").innerHTML = "";
           return;
         }
 
-        // Only show completed orders
-        if(!data.completed) return;
-
-        // Add the order at the top
         const li = document.createElement("li");
         li.innerHTML = `
           <span class="order-number">Order #${data.orderNumber}</span> — 
@@ -74,7 +49,6 @@
       }
     };
 
-    // Clear All button click
     document.getElementById("clearAllBtn").onclick = () => {
       if(confirm("Är du säker på att du vill rensa alla beställningar?")) {
         fetch("/clear-history", { method: "POST" })
