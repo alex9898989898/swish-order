@@ -1,0 +1,28 @@
+body { 
+  font-family: Arial, sans-serif; 
+  text-align: center; 
+  margin: 20px; 
+}
+h1 { 
+  font-size: 3em; 
+}
+ul { 
+  list-style-type: none; 
+  padding: 0; 
+  max-width: 600px; 
+  margin: auto; 
+}
+li { 
+  font-size: 1.5em; 
+  padding: 10px; 
+  border-bottom: 1px solid #ccc; 
+}
+.order-number { font-weight: bold; color: #007bff; }
+.amount { color: green; }
+.message { color: #555; font-style: italic; }
+#clearAllBtn { 
+  font-size: 1em; 
+  padding: 10px 20px; 
+  margin-bottom: 20px; 
+  cursor: pointer; 
+}
