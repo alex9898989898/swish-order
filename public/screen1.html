@@ -1,28 +1,44 @@
-const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-const ws = new WebSocket(`${protocol}://${location.host}/?type=screen1`);
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>Orderlista</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
+    h1 { font-size: 3em; }
+    ul { list-style-type: none; padding: 0; max-width: 600px; margin: auto; }
+    li { font-size: 1.5em; padding: 10px; border-bottom: 1px solid #ccc; }
+    .order-number { font-weight: bold; color: #007bff; }
+    .amount { color: green; }
+    .message { color: #555; font-style: italic; }
+  </style>
+</head>
+<body>
+  <h1>Orderlista</h1>
+  <ul id="orderList"></ul>
 
-ws.onopen = () => {
-  console.log("WebSocket ansluten till servern (screen1)!");
-};
+  <script>
+    const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+    const ws = new WebSocket(`${protocol}://${location.host}/?type=screen1`);
 
-ws.onerror = (err) => {
-  console.error("WebSocket fel:", err);
-};
+    ws.onopen = () => console.log("WebSocket ansluten till servern (screen1)!");
+    ws.onerror = (err) => console.error("WebSocket fel:", err);
 
-ws.onmessage = (event) => {
-  try {
-    const data = JSON.parse(event.data); // { orderNumber, amount, message }
-
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <span class="order-number">Order #${data.orderNumber}</span> — 
-      <span class="amount">${data.amount} kr</span> — 
-      <span class="message">"${data.message}"</span>
-    `;
-    
-    const orderList = document.getElementById("orderList");
-    orderList.insertBefore(li, orderList.firstChild);
-  } catch (e) {
-    console.error("Felaktigt meddelande från servern:", e);
-  }
-};
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <span class="order-number">Order #${data.orderNumber}</span> — 
+          <span class="amount">${data.amount} kr</span> — 
+          <span class="message">"${data.message}"</span>
+        `;
+        const orderList = document.getElementById("orderList");
+        orderList.insertBefore(li, orderList.firstChild);
+      } catch (e) {
+        console.error("Felaktigt meddelande från servern:", e);
+      }
+    };
+  </script>
+</body>
+</html>
