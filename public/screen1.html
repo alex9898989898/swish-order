@@ -17,28 +17,31 @@
   <h1>Orderlista</h1>
   <ul id="orderList"></ul>
 
-  <script>
-    const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-    const ws = new WebSocket(`${protocol}://${location.host}/?type=screen1`);
+<script>
+const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+const ws = new WebSocket(`${protocol}://${location.host}/?type=screen1`);
 
-    ws.onopen = () => console.log("WebSocket ansluten till servern (screen1)!");
-    ws.onerror = (err) => console.error("WebSocket fel:", err);
+ws.onopen = () => {
+  console.log("WebSocket ansluten till servern (screen1)!");
+};
 
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        const li = document.createElement("li");
-        li.innerHTML = `
-          <span class="order-number">Order #${data.orderNumber}</span> — 
-          <span class="amount">${data.amount} kr</span> — 
-          <span class="message">"${data.message}"</span>
-        `;
-        const orderList = document.getElementById("orderList");
-        orderList.insertBefore(li, orderList.firstChild);
-      } catch (e) {
-        console.error("Felaktigt meddelande från servern:", e);
-      }
-    };
-  </script>
+ws.onerror = (err) => {
+  console.error("WebSocket fel:", err);
+};
+
+ws.onmessage = (event) => {
+  try {
+    const data = JSON.parse(event.data); // { orderNumber, amount, message }
+    const li = document.createElement("li");
+    li.innerHTML = `Order #${data.orderNumber} — ${data.amount} kr — "${data.message}"`;
+    const orderList = document.getElementById("orderList");
+    orderList.insertBefore(li, orderList.firstChild);
+  } catch (e) {
+    console.error("Felaktigt meddelande från servern:", e);
+  }
+};
+</script>
+
 </body>
 </html>
+
