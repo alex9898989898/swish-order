@@ -15,12 +15,12 @@ body {
   align-items: center;
 }
 
-/* ===== Container for Index Page ===== */
+/* ===== Container ===== */
 .container {
   background-color: #fff;
   padding: 40px 50px;
   border-radius: 15px;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
   width: 100%;
   max-width: 450px;
   text-align: center;
@@ -28,37 +28,37 @@ body {
 
 /* ===== Heading ===== */
 h1 {
-  font-size: 2.2rem;
+  font-size: 2rem;
   color: #1e3a8a;
   margin-bottom: 25px;
 }
 
-/* ===== Input Fields ===== */
-input[type="number"],
-input[type="text"] {
-  width: 100%;
+/* ===== Order Form ===== */
+.order-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.order-form input[type="number"],
+.order-form input[type="text"] {
   padding: 12px 15px;
-  margin: 10px 0;
   border-radius: 10px;
   border: 1px solid #ccc;
   font-size: 1rem;
   transition: all 0.2s ease;
 }
 
-input:focus {
+.order-form input:focus {
   border-color: #1e3a8a;
   box-shadow: 0 0 8px rgba(30,58,138,0.3);
   outline: none;
 }
 
-/* ===== Buttons ===== */
-button {
-  width: 100%;
+.place-btn {
   padding: 12px;
-  margin-top: 15px;
   background-color: #1e3a8a;
   color: #fff;
-  font-size: 1rem;
   font-weight: 600;
   border: none;
   border-radius: 10px;
@@ -66,14 +66,14 @@ button {
   transition: all 0.2s ease;
 }
 
-button:hover {
+.place-btn:hover {
   background-color: #3b82f6;
   transform: translateY(-2px);
   box-shadow: 0 4px 6px rgba(0,0,0,0.2);
 }
 
-/* ===== Latest Order Info ===== */
-#latestOrder {
+/* ===== Latest Order ===== */
+.latest-order {
   margin-top: 20px;
   font-size: 1.1rem;
   color: #1e3a8a;
@@ -81,16 +81,21 @@ button:hover {
 }
 
 /* ===== Links ===== */
-a {
-  display: inline-block;
-  margin-top: 15px;
+.links {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.links a {
   color: #1e3a8a;
   font-weight: 500;
   text-decoration: none;
   transition: all 0.2s ease;
 }
 
-a:hover {
+.links a:hover {
   color: #3b82f6;
   text-decoration: underline;
 }
