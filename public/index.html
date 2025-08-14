@@ -6,20 +6,22 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Beställning</h1>
+  <div class="container">
+    <h1>Beställning</h1>
 
-  <div class="order-form">
-    <input type="number" id="amount" placeholder="Belopp (kr)" />
-    <input type="text" id="message" placeholder="Meddelande" />
-    <button class="place-btn" onclick="placeOrder()">Betala med Swish</button>
-  </div>
+    <div class="order-form">
+      <input type="number" id="amount" placeholder="Belopp (kr)" />
+      <input type="text" id="message" placeholder="Meddelande" />
+      <button class="place-btn" onclick="placeOrder()">Betala med Swish</button>
+    </div>
 
-  <div id="latestOrder" class="latest-order">Senaste order: -</div>
+    <div id="latestOrder" class="latest-order">Senaste order: -</div>
 
-  <div class="links">
-    <a href="screen.html" target="_blank">📺 Öppna Order Screen</a>
-    <a href="screen1.html" target="_blank">📺 Öppna Order Screen 1</a>
-    <a href="history.html" target="_blank">📚 Öppna Historik</a>
+    <div class="links">
+      <a href="screen.html" target="_blank">📺 Öppna Order Screen</a>
+      <a href="screen1.html" target="_blank">📺 Öppna Order Screen 1</a>
+      <a href="history.html" target="_blank">📚 Öppna Historik</a>
+    </div>
   </div>
 
   <script>
