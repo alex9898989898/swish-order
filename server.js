@@ -16,6 +16,7 @@ const server = app.listen(port, () => {
 const wss = new WebSocket.Server({ noServer: true });
 let screenClients = [];
 
+// WebSocket-anslutning
 wss.on("connection", (ws) => {
   screenClients.push(ws);
   ws.on("close", () => {
@@ -23,21 +24,25 @@ wss.on("connection", (ws) => {
   });
 });
 
+// Hantera upgrade för WebSocket
 server.on("upgrade", (request, socket, head) => {
   wss.handleUpgrade(request, socket, head, (ws) => {
     wss.emit("connection", ws, request);
   });
 });
 
+// Hantera nya orders
 app.post("/order", (req, res) => {
   const { amount, message } = req.body;
   const orderNumber = Math.floor(Math.random() * 100000);
 
   console.log(`Ny beställning: ${orderNumber} - ${amount} kr - ${message}`);
 
+  // Skicka hela objektet till alla anslutna clients
+  const orderData = { orderNumber, amount, message };
   screenClients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
-      client.send(orderNumber.toString());
+      client.send(JSON.stringify(orderData));
     }
   });
 
