@@ -22,11 +22,11 @@ wss.on("connection", (ws, req) => {
   ws.screenType = params.get("type"); // screen1, history
   screenClients.push(ws);
 
-  // Send past orders
+  // Send past orders in correct order
   pastOrders.forEach(order => {
     if (ws.readyState === WebSocket.OPEN) {
       if (ws.screenType === "screen1" && !order.completed) {
-        ws.send(JSON.stringify(order));
+        ws.send(JSON.stringify(order)); // äldsta först
       } else if (ws.screenType === "history" && order.completed) {
         ws.send(JSON.stringify(order));
       }
@@ -68,8 +68,10 @@ app.post("/order", (req, res) => {
   const { amount, message } = req.body;
   const orderNumber = Math.floor(Math.random() * 100000);
   const orderData = { orderNumber, amount, message, completed: false };
-  pastOrders.push(orderData);
 
+  pastOrders.push(orderData); // äldsta order längst bak
+
+  // Skicka nya order till screen1 – append längst ner på klienten
   screenClients.forEach(client => {
     if (client.readyState === WebSocket.OPEN && client.screenType === "screen1") {
       client.send(JSON.stringify(orderData));
