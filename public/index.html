@@ -17,26 +17,25 @@
   <button onclick="placeOrder()">Betala med Swish</button>
 
   <div id="latestOrder">Senaste order: -</div>
-   <a href="screen.html" target="_blank">Open Order Screen</a>
+  <a href="screen.html" target="_blank">Open Order Screen</a>
   <a href="screen1.html" target="_blank">Open Order Screen</a>
 
   <script>
-    // Dynamisk WebSocket URL beroende på om vi kör lokalt eller på Render
     const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
     const wsUrl = `${protocol}://${location.host}`;
     const ws = new WebSocket(wsUrl);
 
+    ws.onopen = () => console.log("WebSocket ansluten!");
+    ws.onerror = (error) => console.log("WebSocket fel:", error);
+
     ws.onmessage = (event) => {
-      const orderNumber = event.data;
-      document.getElementById("latestOrder").innerText = `Ny order: ${orderNumber}`;
-    };
-
-    ws.onopen = () => {
-      console.log("WebSocket ansluten!");
-    };
-
-    ws.onerror = (error) => {
-      console.log("WebSocket fel:", error);
+      try {
+        const data = JSON.parse(event.data); // parsa JSON
+        document.getElementById("latestOrder").innerText =
+          `Ny order: #${data.orderNumber} — ${data.amount} kr — "${data.message}"`;
+      } catch (err) {
+        console.error("Fel vid tolkning av WebSocket-data:", err);
+      }
     };
 
     async function placeOrder() {
