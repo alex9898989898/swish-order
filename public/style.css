@@ -7,47 +7,61 @@
 }
 
 body {
-  background: linear-gradient(to right, #f7f7f7, #e2e8f0);
+  background: linear-gradient(135deg, #e0f7fa, #fce4ec);
   color: #333;
   min-height: 100vh;
-  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-/* ===== Headings ===== */
-h1 {
+/* ===== Container for Index Page ===== */
+.container {
+  background-color: #fff;
+  padding: 40px 50px;
+  border-radius: 15px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+  width: 100%;
+  max-width: 450px;
   text-align: center;
-  font-size: 2.5rem;
-  margin-bottom: 20px;
-  color: #1e3a8a;
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
 }
 
-/* ===== Inputs & Buttons ===== */
+/* ===== Heading ===== */
+h1 {
+  font-size: 2.2rem;
+  color: #1e3a8a;
+  margin-bottom: 25px;
+}
+
+/* ===== Input Fields ===== */
 input[type="number"],
 input[type="text"] {
-  width: calc(50% - 10px);
-  padding: 10px 15px;
-  margin: 10px 5px;
+  width: 100%;
+  padding: 12px 15px;
+  margin: 10px 0;
+  border-radius: 10px;
   border: 1px solid #ccc;
-  border-radius: 8px;
   font-size: 1rem;
   transition: all 0.2s ease;
 }
 
 input:focus {
   border-color: #1e3a8a;
+  box-shadow: 0 0 8px rgba(30,58,138,0.3);
   outline: none;
-  box-shadow: 0 0 5px rgba(30,58,138,0.5);
 }
 
+/* ===== Buttons ===== */
 button {
-  padding: 10px 20px;
-  margin: 10px 5px;
-  border: none;
-  border-radius: 8px;
+  width: 100%;
+  padding: 12px;
+  margin-top: 15px;
   background-color: #1e3a8a;
   color: #fff;
   font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -58,114 +72,21 @@ button:hover {
   box-shadow: 0 4px 6px rgba(0,0,0,0.2);
 }
 
-/* Special Clear Button */
-.clear-btn {
-  background-color: #dc2626;
-}
-
-.clear-btn:hover {
-  background-color: #f87171;
-}
-
-/* ===== Order Cards ===== */
-ul {
-  list-style: none;
-  padding: 0;
-}
-
-li {
-  background-color: #fff;
-  margin: 10px 0;
-  padding: 15px 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: all 0.2s ease;
-}
-
-li:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 10px rgba(0,0,0,0.15);
-}
-
-.order-number {
-  font-weight: bold;
-  color: #1e3a8a;
-}
-
-.amount {
-  font-weight: 600;
-  color: #16a34a;
-  margin-left: 10px;
-}
-
-.message {
-  margin-top: 5px;
-  font-style: italic;
-  color: #555;
-}
-
-/* For screen1 remove button */
-.remove-btn {
-  background-color: #ef4444;
-  color: #fff;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: all 0.2s ease;
-}
-
-.remove-btn:hover {
-  background-color: #f87171;
-  transform: translateY(-2px);
-}
-
-/* ===== Screen1 / History specific ===== */
-.history-list {
-  max-height: 60vh;
-  overflow-y: auto;
-  padding-right: 10px;
-}
-
-.history-card div:first-child {
-  display: flex;
-  justify-content: space-between;
-}
-
 /* ===== Latest Order Info ===== */
 #latestOrder {
-  margin-top: 15px;
+  margin-top: 20px;
   font-size: 1.1rem;
-  text-align: center;
   color: #1e3a8a;
   font-weight: 500;
-}
-
-/* ===== History Icon for screen1 ===== */
-.history-icon {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  font-size: 2rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.history-icon:hover {
-  transform: scale(1.2);
 }
 
 /* ===== Links ===== */
 a {
   display: inline-block;
-  margin: 10px 5px;
-  text-decoration: none;
+  margin-top: 15px;
   color: #1e3a8a;
   font-weight: 500;
+  text-decoration: none;
   transition: all 0.2s ease;
 }
 
