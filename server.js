@@ -16,23 +16,18 @@ const server = app.listen(port, () => {
 const wss = new WebSocket.Server({ noServer: true });
 let screenClients = [];
 
-// WebSocket-anslutning med typ
-wss.on("connection", (ws, request) => {
-  const url = new URL(request.url, `http://${request.headers.host}`);
-  const clientType = url.searchParams.get("type");
-
-  if (clientType === "screen1") {
-    screenClients.push(ws);
-    console.log("screen1 ansluten!");
-  }
+// Hantera WebSocket-anslutning med typ
+wss.on("connection", (ws, req) => {
+  const params = new URLSearchParams(req.url.replace("/", ""));
+  ws.screenType = params.get("type"); // t.ex. "screen1"
+  screenClients.push(ws);
 
   ws.on("close", () => {
     screenClients = screenClients.filter((c) => c !== ws);
-    console.log("screen1 frånkopplad!");
   });
 });
 
-// Hantera upgrade för WebSocket
+// Hantera upgrade
 server.on("upgrade", (request, socket, head) => {
   wss.handleUpgrade(request, socket, head, (ws) => {
     wss.emit("connection", ws, request);
@@ -46,10 +41,11 @@ app.post("/order", (req, res) => {
 
   console.log(`Ny beställning: ${orderNumber} - ${amount} kr - ${message}`);
 
-  // Skicka orderdata endast till screen1-klienter
   const orderData = { orderNumber, amount, message };
+
+  // Skicka endast till clients med screenType="screen1"
   screenClients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
+    if (client.readyState === WebSocket.OPEN && client.screenType === "screen1") {
       client.send(JSON.stringify(orderData));
     }
   });
