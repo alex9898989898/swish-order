@@ -2,18 +2,25 @@
 <html lang="sv">
 <head>
   <meta charset="UTF-8">
-  <title>index</title>
+  <title>Beställning</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <h1>Beställning</h1>
-  <input type="number" id="amount" placeholder="Belopp (kr)" />
-  <input type="text" id="message" placeholder="Meddelande" />
-  <button onclick="placeOrder()">Betala med Swish</button>
 
-  <div id="latestOrder">Senaste order: -</div>
-  <a href="screen.html" target="_blank">Open Order Screen</a>
-  <a href="screen1.html" target="_blank">Open Order Screen</a>
+  <div class="order-form">
+    <input type="number" id="amount" placeholder="Belopp (kr)" />
+    <input type="text" id="message" placeholder="Meddelande" />
+    <button class="place-btn" onclick="placeOrder()">Betala med Swish</button>
+  </div>
+
+  <div id="latestOrder" class="latest-order">Senaste order: -</div>
+
+  <div class="links">
+    <a href="screen.html" target="_blank">📺 Öppna Order Screen</a>
+    <a href="screen1.html" target="_blank">📺 Öppna Order Screen 1</a>
+    <a href="history.html" target="_blank">📚 Öppna Historik</a>
+  </div>
 
   <script>
     async function placeOrder() {
@@ -34,7 +41,12 @@
 
         const data = await res.json();
         document.getElementById("latestOrder").innerText =
-          `Ny order skickad! Ordernummer: #${data.orderNumber}`;
+          `✅ Ny order skickad! Ordernummer: #${data.orderNumber}`;
+
+        // Clear inputs
+        document.getElementById("amount").value = "";
+        document.getElementById("message").value = "";
+
       } catch (err) {
         alert("Fel vid beställning, försök igen!");
         console.error(err);
