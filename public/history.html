@@ -6,9 +6,11 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Order History</h1>
-  <button id="clearAllBtn">Clear All</button>
-  <ul id="historyList"></ul>
+  <h1>Orderhistorik</h1>
+
+  <button id="clearAllBtn" class="clear-btn">Rensa Alla</button>
+
+  <ul id="historyList" class="history-list"></ul>
 
   <script>
     const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
@@ -27,11 +29,15 @@
         }
 
         const li = document.createElement("li");
+        li.className = "history-card";
         li.innerHTML = `
-          <span class="order-number">Order #${data.orderNumber}</span> — 
-          <span class="amount">${data.amount} kr</span> — 
-          <span class="message">"${data.message}"</span>
+          <div>
+            <span class="order-number">Order #${data.orderNumber}</span>
+            <span class="amount">${data.amount} kr</span>
+          </div>
+          <div class="message">"${data.message}"</div>
         `;
+
         const historyList = document.getElementById("historyList");
         historyList.insertBefore(li, historyList.firstChild);
 
