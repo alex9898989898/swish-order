@@ -22,16 +22,11 @@
     ws.onopen = () => console.log("WebSocket ansluten till Render!");
     ws.onerror = (err) => console.log("WebSocket fel:", err);
 
+    
     ws.onmessage = (event) => {
-      const orderNumber = event.data;
-
-      // Skapa ett nytt listobjekt och lägg till i listan
-      const li = document.createElement("li");
-      li.innerText = `Order: ${orderNumber}`;
-
-      const orderList = document.getElementById("orderList");
-      orderList.prepend(li); // Nya order överst
-    };
+  const data = JSON.parse(event.data); // parsa JSON
+  document.getElementById("orderNumber").innerText =
+    `Order #${data.orderNumber} — ${data.amount} kr — "${data.message}"`;
   </script>
 </body>
 </html>
