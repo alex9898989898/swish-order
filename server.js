@@ -19,7 +19,7 @@ let screenClients = [];
 // Hantera WebSocket-anslutning med typ
 wss.on("connection", (ws, req) => {
   const params = new URLSearchParams(req.url.replace("/", ""));
-  ws.screenType = params.get("type"); // t.ex. "screen1"
+  ws.screenType = params.get("type"); // t.ex. "screen1" eller "screen"
   screenClients.push(ws);
 
   ws.on("close", () => {
@@ -43,9 +43,12 @@ app.post("/order", (req, res) => {
 
   const orderData = { orderNumber, amount, message };
 
-  // Skicka endast till clients med screenType="screen1"
+  // Skicka till alla clients med screenType="screen1" eller "screen"
   screenClients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN && client.screenType === "screen1") {
+    if (
+      client.readyState === WebSocket.OPEN &&
+      (client.screenType === "screen1" || client.screenType === "screen")
+    ) {
       client.send(JSON.stringify(orderData));
     }
   });
