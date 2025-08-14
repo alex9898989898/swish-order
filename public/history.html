@@ -4,18 +4,39 @@
   <meta charset="UTF-8">
   <title>Order History</title>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
-    h1 { font-size: 3em; }
-    ul { list-style-type: none; padding: 0; max-width: 600px; margin: auto; }
-    li { font-size: 1.5em; padding: 10px; border-bottom: 1px solid #ccc; }
+    body { 
+      font-family: Arial, sans-serif; 
+      text-align: center; 
+      margin: 20px; 
+    }
+    h1 { 
+      font-size: 3em; 
+    }
+    ul { 
+      list-style-type: none; 
+      padding: 0; 
+      max-width: 600px; 
+      margin: auto; 
+    }
+    li { 
+      font-size: 1.5em; 
+      padding: 10px; 
+      border-bottom: 1px solid #ccc; 
+    }
     .order-number { font-weight: bold; color: #007bff; }
     .amount { color: green; }
     .message { color: #555; font-style: italic; }
+    #clearAllBtn { 
+      font-size: 1em; 
+      padding: 10px 20px; 
+      margin-bottom: 20px; 
+      cursor: pointer; 
+    }
   </style>
 </head>
 <body>
   <h1>Order History</h1>
-  <button id="clearAllBtn" style="margin-bottom:20px;">Clear All</button>
+  <button id="clearAllBtn">Clear All</button>
   <ul id="historyList"></ul>
 
   <script>
@@ -28,23 +49,38 @@
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
+
+        // If server tells us to clear the history
+        if(data.type === "clear") {
+          document.getElementById("historyList").innerHTML = "";
+          return;
+        }
+
+        // Otherwise, add the order to the list
         const li = document.createElement("li");
-        li.innerHTML = `Order #${data.orderNumber} — ${data.amount} kr — "${data.message}"`;
+        li.innerHTML = `
+          <span class="order-number">Order #${data.orderNumber}</span> — 
+          <span class="amount">${data.amount} kr</span> — 
+          <span class="message">"${data.message}"</span>
+        `;
         document.getElementById("historyList").appendChild(li);
+
       } catch (e) {
         console.error("Felaktigt meddelande från servern:", e);
       }
     };
 
-    // Clear all button
+    // Clear All button click
     document.getElementById("clearAllBtn").onclick = () => {
-      fetch("/clear-history", { method: "POST" })
-        .then(res => res.json())
-        .then(res => {
-          if(res.status === "success") {
-            document.getElementById("historyList").innerHTML = "";
-          }
-        });
+      if(confirm("Är du säker på att du vill rensa alla beställningar?")) {
+        fetch("/clear-history", { method: "POST" })
+          .then(res => res.json())
+          .then(res => {
+            if(res.status === "success") {
+              document.getElementById("historyList").innerHTML = "";
+            }
+          });
+      }
     };
   </script>
 </body>
