@@ -51,14 +51,15 @@
         removeBtn.innerText = "X";
 
         removeBtn.onclick = () => {
-          // Send message to server that this order is completed
+          // Mark order as completed on server
           ws.send(JSON.stringify({ type: "complete", orderNumber: data.orderNumber }));
-          li.remove(); // Remove from current screen
+          li.remove();
         };
 
         li.appendChild(info);
         li.appendChild(removeBtn);
 
+        // Insert the new order at the top
         const orderList = document.getElementById("orderList");
         orderList.insertBefore(li, orderList.firstChild);
 
@@ -66,11 +67,6 @@
         console.error("Felaktigt meddelande från servern:", e);
       }
     };
-
-    const orderList = document.getElementById("orderList");
-orderList.insertBefore(li, orderList.firstChild);
-    
   </script>
 </body>
 </html>
-
