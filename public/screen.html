@@ -5,13 +5,15 @@
   <title>Order-skärm</title>
   <style>
     body { font-family: Arial; text-align: center; margin-top: 50px; }
-    h1 { font-size: 5em; }
+    h1 { font-size: 3em; }
+    ul { list-style: none; padding: 0; }
+    li { font-size: 1.5em; color: green; margin: 5px 0; }
   </style>
 </head>
 <body>
   <a href="index.html" target="_blank">Open Order Screen</a>
-  <h2>Senaste ordernummer</h2>
-  <h1 id="orderNumber">-</h1>
+  <h2>Senaste ordrar</h2>
+  <ul id="orderList"></ul>
 
   <script>
     // Anslut till WebSocket på Render
@@ -22,7 +24,13 @@
 
     ws.onmessage = (event) => {
       const orderNumber = event.data;
-      document.getElementById("orderNumber").innerText = `Ny order: ${orderNumber}`;
+
+      // Skapa ett nytt listobjekt och lägg till i listan
+      const li = document.createElement("li");
+      li.innerText = `Order: ${orderNumber}`;
+
+      const orderList = document.getElementById("orderList");
+      orderList.prepend(li); // Nya order överst
     };
   </script>
 </body>
