@@ -23,7 +23,7 @@ wss.on("connection", (ws, req) => {
   ws.screenType = params.get("type"); // screen1, history, etc.
   screenClients.push(ws);
 
-  // Send orders to clients depending on type
+  // Send relevant orders to clients
   pastOrders.forEach(order => {
     if (ws.readyState === WebSocket.OPEN) {
       if (ws.screenType === "screen1" && !order.completed) {
@@ -39,7 +39,7 @@ wss.on("connection", (ws, req) => {
       const data = JSON.parse(msg);
 
       if (data.type === "complete") {
-        // Find order and mark as completed
+        // Mark order as completed
         const order = pastOrders.find(o => o.orderNumber === data.orderNumber);
         if (order) {
           order.completed = true;
@@ -87,4 +87,18 @@ app.post("/order", (req, res) => {
   });
 
   res.json({ status: "success", orderNumber });
+});
+
+// Clear all completed orders
+app.post("/clear-history", (req, res) => {
+  pastOrders = pastOrders.filter(order => !order.completed);
+
+  // Notify all history clients to clear their list
+  screenClients.forEach(client => {
+    if (client.screenType === "history" && client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({ type: "clear" }));
+    }
+  });
+
+  res.json({ status: "success" });
 });
