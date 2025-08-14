@@ -15,6 +15,7 @@
 </head>
 <body>
   <h1>Order History</h1>
+  <button id="clearAllBtn" style="margin-bottom:20px;">Clear All</button>
   <ul id="historyList"></ul>
 
   <script>
@@ -26,22 +27,24 @@
 
     ws.onmessage = (event) => {
       try {
-        const data = JSON.parse(event.data); // { orderNumber, amount, message, completed }
-
-        // Only show completed orders
-        if (!data.completed) return;
-
+        const data = JSON.parse(event.data);
         const li = document.createElement("li");
-        li.innerHTML = `
-          <span class="order-number">Order #${data.orderNumber}</span> — 
-          <span class="amount">${data.amount} kr</span> — 
-          <span class="message">"${data.message}"</span>
-        `;
+        li.innerHTML = `Order #${data.orderNumber} — ${data.amount} kr — "${data.message}"`;
         document.getElementById("historyList").appendChild(li);
-
       } catch (e) {
         console.error("Felaktigt meddelande från servern:", e);
       }
+    };
+
+    // Clear all button
+    document.getElementById("clearAllBtn").onclick = () => {
+      fetch("/clear-history", { method: "POST" })
+        .then(res => res.json())
+        .then(res => {
+          if(res.status === "success") {
+            document.getElementById("historyList").innerHTML = "";
+          }
+        });
     };
   </script>
 </body>
