@@ -42,43 +42,49 @@
   <ul id="orderList"></ul>
 
   <script>
-    // Determine the WebSocket protocol based on the current page (ws for http, wss for https)
     const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-
-    // Connect to WebSocket server, passing the type "screen1" so server knows which screen this is
     const ws = new WebSocket(`${protocol}://${location.host}/?type=screen1`);
 
-    // Fired when connection to server is successfully opened
     ws.onopen = () => {
       console.log("WebSocket ansluten till servern (screen1)!");
     };
 
-    // Fired if there is a connection error
     ws.onerror = (err) => {
       console.error("WebSocket fel:", err);
     };
 
-    // Fired when the server sends a new order
     ws.onmessage = (event) => {
       try {
-        // Parse the JSON data from server
         const data = JSON.parse(event.data); // { orderNumber, amount, message }
 
-        // Create a new <li> element for this order
+        // Create a new <li> element for the order
         const li = document.createElement("li");
 
-        // Fill <li> with order details
-        li.innerHTML = `
+        // Order info container
+        const info = document.createElement("div");
+        info.className = "order-info";
+        info.innerHTML = `
           <span class="order-number">Order #${data.orderNumber}</span> — 
           <span class="amount">${data.amount} kr</span> — 
           <span class="message">"${data.message}"</span>
         `;
 
-        // Get the order list container
-        const orderList = document.getElementById("orderList");
+        // Remove button
+        const removeBtn = document.createElement("button");
+        removeBtn.className = "remove-btn";
+        removeBtn.innerText = "X";
 
-        // Insert the new order at the top of the list (most recent first)
+        // When clicked, remove this order from the list
+        removeBtn.onclick = () => li.remove();
+
+        // Add info and button to <li>
+        li.appendChild(info);
+        li.appendChild(removeBtn);
+
+        // Insert the order at the top of the list
+        const orderList = document.getElementById("orderList");
         orderList.insertBefore(li, orderList.firstChild);
+
       } catch (e) {
         console.error("Felaktigt meddelande från servern:", e);
       }
@@ -86,3 +92,4 @@
   </script>
 </body>
 </html>
+
