@@ -6,11 +6,39 @@
   <style>
     body { font-family: Arial; text-align: center; margin-top: 50px; }
     h1 { font-size: 3em; }
+    ul { list-style-type: none; padding: 0; }
+    li { margin: 10px 0; font-size: 1.5em; }
   </style>
 </head>
 <body>
   <a href="index.html" target="_blank">Tillbaka till Beställning</a>
   <h2>Senaste ordrar</h2>
-  <div>Inga order visas här.</div>
+  <ul id="orderList">
+    <li>Inga order visas här.</li>
+  </ul>
+
+  <script>
+    const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+    const ws = new WebSocket(`${protocol}://${location.host}/?type=screen`);
+
+    ws.onopen = () => { console.log("WebSocket ansluten till servern (screen)!"); };
+    ws.onerror = (err) => { console.error("WebSocket fel:", err); };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data); // { orderNumber, amount, message }
+        const li = document.createElement("li");
+        li.innerHTML = `Order #${data.orderNumber} — ${data.amount} kr — "${data.message}"`;
+        const orderList = document.getElementById("orderList");
+        // Ta bort "Inga order visas här." om det finns
+        if (orderList.children.length === 1 && orderList.children[0].innerText.includes("Inga order")) {
+          orderList.innerHTML = "";
+        }
+        orderList.insertBefore(li, orderList.firstChild);
+      } catch (e) {
+        console.error("Felaktigt meddelande från servern:", e);
+      }
+    };
+  </script>
 </body>
 </html>
