@@ -2,7 +2,7 @@
 <html lang="sv">
 <head>
   <meta charset="UTF-8">
-  <title>index</title>
+  <title>Orderlista</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -28,30 +28,22 @@
         if (data.completed) return;
 
         const li = document.createElement("li");
-
-        const info = document.createElement("div");
-        info.innerHTML = `
+        li.innerHTML = `
           <span class="order-number">Order #${data.orderNumber}</span> — 
           <span class="amount">${data.amount} kr</span> — 
           <span class="message">"${data.message}"</span>
+          <button class="remove-btn">X</button>
         `;
 
-        const removeBtn = document.createElement("button");
-        removeBtn.className = "remove-btn";
-        removeBtn.innerText = "X";
-
-        removeBtn.onclick = () => {
-          // Mark order as completed on server
+        // Remove button action
+        li.querySelector(".remove-btn").onclick = () => {
           ws.send(JSON.stringify({ type: "complete", orderNumber: data.orderNumber }));
           li.remove();
         };
 
-        li.appendChild(info);
-        li.appendChild(removeBtn);
-
-        // Insert the new order at the top
+        // Insert at the top to show oldest first
         const orderList = document.getElementById("orderList");
-        orderList.appendChild(li);
+        orderList.insertBefore(li, orderList.firstChild);
 
       } catch (e) {
         console.error("Felaktigt meddelande från servern:", e);
@@ -60,5 +52,3 @@
   </script>
 </body>
 </html>
-
-
