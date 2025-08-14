@@ -43,7 +43,8 @@
 
         // Insert at the top to show oldest first
         const orderList = document.getElementById("orderList");
-        orderList.insertBefore(li, orderList.firstChild);
+         orderList.appendChild(li);
+
 
       } catch (e) {
         console.error("Felaktigt meddelande från servern:", e);
@@ -52,3 +53,4 @@
   </script>
 </body>
 </html>
+
