@@ -1,11 +1,48 @@
-<h1>Historik</h1>
-<ul id="historyList"></ul>
-<script>
-const wsHistory = new WebSocket(`${protocol}://${location.host}/?type=history`);
-wsHistory.onmessage = (event) => {
-  const data = JSON.parse(event.data);
-  const li = document.createElement("li");
-  li.innerText = `Order #${data.orderNumber} — ${data.amount} kr — "${data.message}"`;
-  document.getElementById("historyList").appendChild(li);
-};
-</script>
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>Order History</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
+    h1 { font-size: 3em; }
+    ul { list-style-type: none; padding: 0; max-width: 600px; margin: auto; }
+    li { font-size: 1.5em; padding: 10px; border-bottom: 1px solid #ccc; }
+    .order-number { font-weight: bold; color: #007bff; }
+    .amount { color: green; }
+    .message { color: #555; font-style: italic; }
+  </style>
+</head>
+<body>
+  <h1>Order History</h1>
+  <ul id="historyList"></ul>
+
+  <script>
+    const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+    const ws = new WebSocket(`${protocol}://${location.host}/?type=history`);
+
+    ws.onopen = () => console.log("WebSocket ansluten till servern (history)!");
+    ws.onerror = (err) => console.error("WebSocket fel:", err);
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data); // { orderNumber, amount, message, completed }
+
+        // Only show completed orders
+        if (!data.completed) return;
+
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <span class="order-number">Order #${data.orderNumber}</span> — 
+          <span class="amount">${data.amount} kr</span> — 
+          <span class="message">"${data.message}"</span>
+        `;
+        document.getElementById("historyList").appendChild(li);
+
+      } catch (e) {
+        console.error("Felaktigt meddelande från servern:", e);
+      }
+    };
+  </script>
+</body>
+</html>
