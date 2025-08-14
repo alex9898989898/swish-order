@@ -56,14 +56,18 @@
           return;
         }
 
-        // Otherwise, add the order to the list
+        // Only show completed orders
+        if(!data.completed) return;
+
+        // Add the order at the top
         const li = document.createElement("li");
         li.innerHTML = `
           <span class="order-number">Order #${data.orderNumber}</span> — 
           <span class="amount">${data.amount} kr</span> — 
           <span class="message">"${data.message}"</span>
         `;
-        document.getElementById("historyList").appendChild(li);
+        const historyList = document.getElementById("historyList");
+        historyList.insertBefore(li, historyList.firstChild);
 
       } catch (e) {
         console.error("Felaktigt meddelande från servern:", e);
