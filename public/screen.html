@@ -2,31 +2,35 @@
 <html lang="sv">
 <head>
   <meta charset="UTF-8">
-  <title>Order-skärm</title>
+  <title>Open Order Screen</title>
   <style>
     body { font-family: Arial; text-align: center; margin-top: 50px; }
-    h1 { font-size: 3em; }
-    ul { list-style: none; padding: 0; }
-    li { font-size: 1.5em; color: green; margin: 5px 0; }
+    h1 { font-size: 2.5em; }
+    #latestOrder { font-size: 2em; color: green; margin-top: 20px; }
   </style>
 </head>
 <body>
-  <a href="index.html" target="_blank">Open Order Screen</a>
-  <h2>Senaste ordrar</h2>
-  <ul id="orderList"></ul>
+  <a href="index.html" target="_blank">Tillbaka till beställning</a>
+  <h2>Senaste order</h2>
+  <div id="latestOrder">Inga order än...</div>
 
   <script>
-    // Anslut till WebSocket på Render
-    const ws = new WebSocket("wss://swish-order.onrender.com");
+    const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+    const wsUrl = `${protocol}://${location.host}`;
+    const ws = new WebSocket(wsUrl);
 
-    ws.onopen = () => console.log("WebSocket ansluten till Render!");
-    ws.onerror = (err) => console.log("WebSocket fel:", err);
+    ws.onopen = () => console.log("WebSocket ansluten!");
+    ws.onerror = (err) => console.error("WebSocket fel:", err);
 
-    
     ws.onmessage = (event) => {
-  const data = JSON.parse(event.data); // parsa JSON
-  document.getElementById("orderNumber").innerText =
-    `Order #${data.orderNumber} — ${data.amount} kr — "${data.message}"`;
+      try {
+        const data = JSON.parse(event.data);
+        document.getElementById("latestOrder").innerText =
+          `Order #${data.orderNumber} — ${data.amount} kr — "${data.message}"`;
+      } catch (e) {
+        console.error("Fel vid tolkning av WebSocket-data:", e);
+      }
+    };
   </script>
 </body>
 </html>
