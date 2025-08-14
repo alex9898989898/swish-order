@@ -14,55 +14,51 @@ const server = app.listen(port, () => {
 });
 
 const wss = new WebSocket.Server({ noServer: true });
-
 let screenClients = [];
-let activeOrders = []; // Orders that are not yet completed
-let pastOrders = [];   // Completed orders / history
+let pastOrders = []; // Store all orders
 
-// Handle WebSocket connection
+// WebSocket connection
 wss.on("connection", (ws, req) => {
   const params = new URLSearchParams(req.url.replace("/", ""));
-  ws.screenType = params.get("type"); // e.g., "screen1" or "screen"
+  ws.screenType = params.get("type"); // screen1, history, etc.
   screenClients.push(ws);
 
-  // Send active orders first
-  if (ws.screenType === "screen1" || ws.screenType === "screen") {
-    activeOrders.forEach(order => {
-      if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(order));
-    });
+  // Send orders to clients depending on type
+  pastOrders.forEach(order => {
+    if (ws.readyState === WebSocket.OPEN) {
+      if (ws.screenType === "screen1" && !order.completed) {
+        ws.send(JSON.stringify(order));
+      } else if (ws.screenType === "history" && order.completed) {
+        ws.send(JSON.stringify(order));
+      }
+    }
+  });
 
-    // Send past orders (history)
-    pastOrders.forEach(order => {
-      if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ ...order, completed: true }));
-    });
-  }
-
-  ws.on("message", (message) => {
+  ws.on("message", (msg) => {
     try {
-      const data = JSON.parse(message);
+      const data = JSON.parse(msg);
 
       if (data.type === "complete") {
-        // Move order from active to history
-        const index = activeOrders.findIndex(o => o.orderNumber === data.orderNumber);
-        if (index !== -1) {
-          const completedOrder = activeOrders.splice(index, 1)[0];
-          pastOrders.push(completedOrder);
+        // Find order and mark as completed
+        const order = pastOrders.find(o => o.orderNumber === data.orderNumber);
+        if (order) {
+          order.completed = true;
 
-          // Notify all clients to update their lists
+          // Notify all history clients
           screenClients.forEach(client => {
-            if (client.readyState === WebSocket.OPEN) {
-              client.send(JSON.stringify({ ...completedOrder, completed: true }));
+            if (client.screenType === "history" && client.readyState === WebSocket.OPEN) {
+              client.send(JSON.stringify(order));
             }
           });
         }
       }
     } catch (e) {
-      console.error("Fel vid meddelande:", e);
+      console.error("Fel vid WebSocket meddelande:", e);
     }
   });
 
   ws.on("close", () => {
-    screenClients = screenClients.filter((c) => c !== ws);
+    screenClients = screenClients.filter(c => c !== ws);
   });
 });
 
@@ -78,17 +74,14 @@ app.post("/order", (req, res) => {
   const { amount, message } = req.body;
   const orderNumber = Math.floor(Math.random() * 100000);
 
-  const orderData = { orderNumber, amount, message };
-  activeOrders.push(orderData); // <-- Save as active order
+  const orderData = { orderNumber, amount, message, completed: false };
+  pastOrders.push(orderData);
 
   console.log(`Ny beställning: ${orderNumber} - ${amount} kr - ${message}`);
 
-  // Send to all clients
-  screenClients.forEach((client) => {
-    if (
-      client.readyState === WebSocket.OPEN &&
-      (client.screenType === "screen1" || client.screenType === "screen")
-    ) {
+  // Send to all screen1 clients
+  screenClients.forEach(client => {
+    if (client.readyState === WebSocket.OPEN && client.screenType === "screen1") {
       client.send(JSON.stringify(orderData));
     }
   });
