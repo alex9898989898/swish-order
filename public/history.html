@@ -1,0 +1,11 @@
+<h1>Historik</h1>
+<ul id="historyList"></ul>
+<script>
+const wsHistory = new WebSocket(`${protocol}://${location.host}/?type=history`);
+wsHistory.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  const li = document.createElement("li");
+  li.innerText = `Order #${data.orderNumber} — ${data.amount} kr — "${data.message}"`;
+  document.getElementById("historyList").appendChild(li);
+};
+</script>
