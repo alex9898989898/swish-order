@@ -66,6 +66,11 @@
         console.error("Felaktigt meddelande från servern:", e);
       }
     };
+
+    const orderList = document.getElementById("orderList");
+orderList.insertBefore(li, orderList.firstChild);
+    
   </script>
 </body>
 </html>
+
