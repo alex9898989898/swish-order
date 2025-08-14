@@ -6,11 +6,15 @@
   <style>
     body { 
       font-family: Arial, sans-serif; 
-      text-align: center; 
       margin: 20px; 
+      display: flex; 
+      justify-content: space-between;
     }
-    h1 { 
-      font-size: 3em; 
+    h1 { font-size: 2em; text-align: center; width: 100%; }
+
+    /* Active Orders */
+    #activeOrders { 
+      width: 65%; 
     }
     ul { 
       list-style-type: none; 
@@ -19,77 +23,91 @@
       margin: auto; 
     }
     li { 
-      font-size: 1.5em; 
+      font-size: 1.2em; 
       padding: 10px; 
       border-bottom: 1px solid #ccc; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center;
     }
-    .order-number { 
-      font-weight: bold; 
-      color: #007bff; 
+    .order-number { font-weight: bold; color: #007bff; }
+    .amount { color: green; }
+    .message { color: #555; font-style: italic; }
+    .remove-btn { margin-left: 10px; cursor: pointer; }
+
+    /* History Panel */
+    #historyPanel { 
+      width: 30%; 
+      border: 1px solid #ccc; 
+      padding: 10px; 
+      max-height: 80vh; 
+      overflow-y: auto; 
+      position: sticky; 
+      top: 20px; 
+      background-color: #f9f9f9;
     }
-    .amount { 
-      color: green; 
-    }
-    .message { 
-      color: #555; 
-      font-style: italic; 
-    }
+    #historyPanel h2 { text-align: center; font-size: 1.5em; margin-top: 0; }
+    #historyPanel ul li { font-size: 1em; border-bottom: 1px dashed #aaa; }
   </style>
 </head>
 <body>
-  <h1>Orderlista</h1>
-  <!-- Container for all orders -->
-  <ul id="orderList"></ul>
+  <div id="activeOrders">
+    <h1>Aktiva Ordrar</h1>
+    <ul id="orderList"></ul>
+  </div>
 
-  <script>
-    const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-    const ws = new WebSocket(`${protocol}://${location.host}/?type=screen1`);
+  <div id="historyPanel">
+    <h2>Historik</h2>
+    <ul id="historyList"></ul>
+  </div>
 
-    ws.onopen = () => {
-      console.log("WebSocket ansluten till servern (screen1)!");
+<script>
+const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+const ws = new WebSocket(`${protocol}://${location.host}/?type=screen1`);
+
+ws.onopen = () => console.log("WebSocket ansluten till servern (screen1)!");
+ws.onerror = (err) => console.error("WebSocket fel:", err);
+
+ws.onmessage = (event) => {
+  try {
+    const data = JSON.parse(event.data); // { orderNumber, amount, message }
+
+    // Create <li> for active order
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <span class="order-number">Order #${data.orderNumber}</span> — 
+      <span class="amount">${data.amount} kr</span> — 
+      <span class="message">"${data.message}"</span>
+    `;
+
+    // Remove / Complete Button
+    const removeBtn = document.createElement("button");
+    removeBtn.className = "remove-btn";
+    removeBtn.innerText = "X";
+    removeBtn.onclick = () => {
+      // Move order to history
+      const historyList = document.getElementById("historyList");
+      const historyLi = document.createElement("li");
+      historyLi.innerHTML = li.innerHTML;
+      historyList.insertBefore(historyLi, historyList.firstChild);
+
+      // Remove from active list
+      li.remove();
+
+      // Optional: notify server that order is completed
+      ws.send(JSON.stringify({ type: "complete", orderNumber: data.orderNumber }));
     };
 
-    ws.onerror = (err) => {
-      console.error("WebSocket fel:", err);
-    };
+    li.appendChild(removeBtn);
 
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data); // { orderNumber, amount, message }
+    // Add to active orders list at the top
+    const orderList = document.getElementById("orderList");
+    orderList.insertBefore(li, orderList.firstChild);
 
-        // Create a new <li> element for the order
-        const li = document.createElement("li");
-
-        // Order info container
-        const info = document.createElement("div");
-        info.className = "order-info";
-        info.innerHTML = `
-          <span class="order-number">Order #${data.orderNumber}</span> — 
-          <span class="amount">${data.amount} kr</span> — 
-          <span class="message">"${data.message}"</span>
-        `;
-
-        // Remove button
-        const removeBtn = document.createElement("button");
-        removeBtn.className = "remove-btn";
-        removeBtn.innerText = "X";
-
-        // When clicked, remove this order from the list
-        removeBtn.onclick = () => li.remove();
-
-        // Add info and button to <li>
-        li.appendChild(info);
-        li.appendChild(removeBtn);
-
-        // Insert the order at the top of the list
-        const orderList = document.getElementById("orderList");
-        orderList.insertBefore(li, orderList.firstChild);
-
-      } catch (e) {
-        console.error("Felaktigt meddelande från servern:", e);
-      }
-    };
-  </script>
+  } catch (e) {
+    console.error("Felaktigt meddelande från servern:", e);
+  }
+};
+</script>
 </body>
 </html>
-
