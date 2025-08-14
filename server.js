@@ -16,11 +16,19 @@ const server = app.listen(port, () => {
 const wss = new WebSocket.Server({ noServer: true });
 let screenClients = [];
 
-// WebSocket-anslutning
-wss.on("connection", (ws) => {
-  screenClients.push(ws);
+// WebSocket-anslutning med typ
+wss.on("connection", (ws, request) => {
+  const url = new URL(request.url, `http://${request.headers.host}`);
+  const clientType = url.searchParams.get("type");
+
+  if (clientType === "screen1") {
+    screenClients.push(ws);
+    console.log("screen1 ansluten!");
+  }
+
   ws.on("close", () => {
     screenClients = screenClients.filter((c) => c !== ws);
+    console.log("screen1 frånkopplad!");
   });
 });
 
@@ -38,7 +46,7 @@ app.post("/order", (req, res) => {
 
   console.log(`Ny beställning: ${orderNumber} - ${amount} kr - ${message}`);
 
-  // Skicka hela objektet till alla anslutna clients
+  // Skicka orderdata endast till screen1-klienter
   const orderData = { orderNumber, amount, message };
   screenClients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
