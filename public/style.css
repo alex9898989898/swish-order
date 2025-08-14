@@ -1,101 +1,178 @@
-/* ===== General Styles ===== */
-* {
+/* ==============================
+   GENERAL STYLES
+============================== */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f5f7fa;
+  color: #333;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-body {
-  background: linear-gradient(135deg, #e0f7fa, #fce4ec);
-  color: #333;
-  min-height: 100vh;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
 }
 
-/* ===== Container ===== */
-.container {
-  background-color: #fff;
-  padding: 40px 50px;
-  border-radius: 15px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-  width: 100%;
-  max-width: 450px;
-  text-align: center;
-}
-
-/* ===== Heading ===== */
 h1 {
+  margin: 20px 0;
   font-size: 2rem;
-  color: #1e3a8a;
-  margin-bottom: 25px;
+  color: #1a1a1a;
 }
 
-/* ===== Order Form ===== */
+/* ==============================
+   BUTTONS
+============================== */
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  opacity: 0.85;
+}
+
+/* ==============================
+   INDEX PAGE
+============================== */
 .order-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
+  width: 300px;
+  margin-bottom: 20px;
 }
 
-.order-form input[type="number"],
-.order-form input[type="text"] {
-  padding: 12px 15px;
-  border-radius: 10px;
+.order-form input {
+  padding: 10px;
   border: 1px solid #ccc;
+  border-radius: 8px;
   font-size: 1rem;
-  transition: all 0.2s ease;
-}
-
-.order-form input:focus {
-  border-color: #1e3a8a;
-  box-shadow: 0 0 8px rgba(30,58,138,0.3);
-  outline: none;
 }
 
 .place-btn {
-  padding: 12px;
-  background-color: #1e3a8a;
-  color: #fff;
-  font-weight: 600;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  background: #4CAF50;
+  color: white;
 }
 
-.place-btn:hover {
-  background-color: #3b82f6;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-}
-
-/* ===== Latest Order ===== */
 .latest-order {
-  margin-top: 20px;
-  font-size: 1.1rem;
-  color: #1e3a8a;
-  font-weight: 500;
+  margin: 10px 0 30px;
+  font-weight: bold;
+  color: #1a73e8;
 }
 
-/* ===== Links ===== */
 .links {
-  margin-top: 20px;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  gap: 15px;
+  flex-wrap: wrap;
 }
 
 .links a {
-  color: #1e3a8a;
-  font-weight: 500;
   text-decoration: none;
-  transition: all 0.2s ease;
+  background: #1a73e8;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: 0.3s;
 }
 
 .links a:hover {
-  color: #3b82f6;
-  text-decoration: underline;
+  background: #155bb5;
+}
+
+/* ==============================
+   SCREEN & SCREEN1
+============================== */
+#orderList {
+  list-style: none;
+  padding: 0;
+  width: 90%;
+  max-width: 800px;
+  margin: 20px auto;
+}
+
+#orderList li {
+  background: white;
+  margin-bottom: 12px;
+  padding: 15px 20px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  font-size: 1rem;
+}
+
+.order-number {
+  font-weight: 600;
+}
+
+.amount {
+  font-weight: bold;
+  color: #4CAF50;
+}
+
+.message {
+  font-style: italic;
+  color: #555;
+}
+
+.remove-btn {
+  background: #e53935;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.remove-btn:hover {
+  background: #b71c1c;
+}
+
+.history-icon {
+  font-size: 2rem;
+  cursor: pointer;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  transition: transform 0.3s;
+}
+
+.history-icon:hover {
+  transform: scale(1.2);
+}
+
+/* ==============================
+   HISTORY PAGE
+============================== */
+#historyList {
+  list-style: none;
+  padding: 0;
+  width: 90%;
+  max-width: 800px;
+  margin: 20px auto;
+}
+
+#historyList li {
+  background: #fff;
+  margin-bottom: 12px;
+  padding: 15px 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#clearAllBtn {
+  background: #f44336;
+  color: white;
+  margin: 10px auto;
+  display: block;
+}
+
+#clearAllBtn:hover {
+  background: #c62828;
 }
