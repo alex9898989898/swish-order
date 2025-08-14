@@ -4,44 +4,85 @@
   <meta charset="UTF-8">
   <title>Orderlista</title>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
-    h1 { font-size: 3em; }
-    ul { list-style-type: none; padding: 0; max-width: 600px; margin: auto; }
-    li { font-size: 1.5em; padding: 10px; border-bottom: 1px solid #ccc; }
-    .order-number { font-weight: bold; color: #007bff; }
-    .amount { color: green; }
-    .message { color: #555; font-style: italic; }
+    body { 
+      font-family: Arial, sans-serif; 
+      text-align: center; 
+      margin: 20px; 
+    }
+    h1 { 
+      font-size: 3em; 
+    }
+    ul { 
+      list-style-type: none; 
+      padding: 0; 
+      max-width: 600px; 
+      margin: auto; 
+    }
+    li { 
+      font-size: 1.5em; 
+      padding: 10px; 
+      border-bottom: 1px solid #ccc; 
+    }
+    .order-number { 
+      font-weight: bold; 
+      color: #007bff; 
+    }
+    .amount { 
+      color: green; 
+    }
+    .message { 
+      color: #555; 
+      font-style: italic; 
+    }
   </style>
 </head>
 <body>
   <h1>Orderlista</h1>
+  <!-- Container for all orders -->
   <ul id="orderList"></ul>
 
-<script>
-const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-const ws = new WebSocket(`${protocol}://${location.host}/?type=screen1`);
+  <script>
+    // Determine the WebSocket protocol based on the current page (ws for http, wss for https)
+    const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
 
-ws.onopen = () => {
-  console.log("WebSocket ansluten till servern (screen1)!");
-};
+    // Connect to WebSocket server, passing the type "screen1" so server knows which screen this is
+    const ws = new WebSocket(`${protocol}://${location.host}/?type=screen1`);
 
-ws.onerror = (err) => {
-  console.error("WebSocket fel:", err);
-};
+    // Fired when connection to server is successfully opened
+    ws.onopen = () => {
+      console.log("WebSocket ansluten till servern (screen1)!");
+    };
 
-ws.onmessage = (event) => {
-  try {
-    const data = JSON.parse(event.data); // { orderNumber, amount, message }
-    const li = document.createElement("li");
-    li.innerHTML = `Order #${data.orderNumber} — ${data.amount} kr — "${data.message}"`;
-    const orderList = document.getElementById("orderList");
-    orderList.insertBefore(li, orderList.firstChild);
-  } catch (e) {
-    console.error("Felaktigt meddelande från servern:", e);
-  }
-};
-</script>
+    // Fired if there is a connection error
+    ws.onerror = (err) => {
+      console.error("WebSocket fel:", err);
+    };
 
+    // Fired when the server sends a new order
+    ws.onmessage = (event) => {
+      try {
+        // Parse the JSON data from server
+        const data = JSON.parse(event.data); // { orderNumber, amount, message }
+
+        // Create a new <li> element for this order
+        const li = document.createElement("li");
+
+        // Fill <li> with order details
+        li.innerHTML = `
+          <span class="order-number">Order #${data.orderNumber}</span> — 
+          <span class="amount">${data.amount} kr</span> — 
+          <span class="message">"${data.message}"</span>
+        `;
+
+        // Get the order list container
+        const orderList = document.getElementById("orderList");
+
+        // Insert the new order at the top of the list (most recent first)
+        orderList.insertBefore(li, orderList.firstChild);
+      } catch (e) {
+        console.error("Felaktigt meddelande från servern:", e);
+      }
+    };
+  </script>
 </body>
 </html>
-
