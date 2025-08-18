@@ -12,10 +12,17 @@
     <div class="order-form">
       <input type="number" id="amount" placeholder="Belopp (kr)" />
       <input type="text" id="message" placeholder="Meddelande" />
-      <button class="place-btn" onclick="placeOrder()">Betala med Swish</button>
+      <button class="place-btn" onclick="placeOrder()">Skicka Order</button>
+      <!-- 🔜 Senare kan du byta knappen ovan till "Betala med Swish" -->
     </div>
 
     <div id="latestOrder" class="latest-order">Senaste order: -</div>
+
+    <!-- 🔜 Här kommer Swish QR att visas -->
+    <div id="qrContainer" style="margin-top:20px; display:none; text-align:center;">
+      <h3>Skanna för att betala med Swish:</h3>
+      <img id="qrImage" src="" alt="Swish QR" style="max-width:200px;" />
+    </div>
 
     <div class="links">
       <a href="screen.html" target="_blank">📺 Öppna Order Screen</a>
@@ -44,6 +51,12 @@
         const data = await res.json();
         document.getElementById("latestOrder").innerText =
           `✅ Ny order skickad! Ordernummer: #${data.orderNumber}`;
+
+        // 🔜 Om du vill visa Swish QR när ordern skapas
+        // if (data.qrUrl) {
+        //   document.getElementById("qrContainer").style.display = "block";
+        //   document.getElementById("qrImage").src = data.qrUrl;
+        // }
 
         // Clear inputs
         document.getElementById("amount").value = "";
