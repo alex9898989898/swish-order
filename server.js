@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const WebSocket = require("ws");
 const path = require("path");
+const fs = require("fs");
 
 const app = express();
 const port = 3000;
@@ -15,14 +16,32 @@ const server = app.listen(port, () => {
 
 const wss = new WebSocket.Server({ noServer: true });
 let screenClients = [];
-let pastOrders = []; // Store all orders
 
+// === Load orders from file when server starts ===
+let pastOrders = [];
+const filePath = path.join(__dirname, "orders.json");
+
+if (fs.existsSync(filePath)) {
+  try {
+    pastOrders = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+    console.log("Orders loaded from file:", pastOrders.length);
+  } catch (err) {
+    console.error("Error reading orders.json:", err);
+  }
+}
+
+// === Save orders to file ===
+function saveOrders() {
+  fs.writeFileSync(filePath, JSON.stringify(pastOrders, null, 2));
+}
+
+// === WebSocket logic ===
 wss.on("connection", (ws, req) => {
   const params = new URLSearchParams(req.url.replace("/", ""));
   ws.screenType = params.get("type"); // screen1, history
   screenClients.push(ws);
 
-  // Send past orders in correct order
+  // Skicka gamla ordrar i rätt ordning
   pastOrders.forEach(order => {
     if (ws.readyState === WebSocket.OPEN) {
       if (ws.screenType === "screen1" && !order.completed) {
@@ -40,6 +59,7 @@ wss.on("connection", (ws, req) => {
         const order = pastOrders.find(o => o.orderNumber === data.orderNumber);
         if (order) {
           order.completed = true;
+          saveOrders(); // <-- spara ändringen
           // Notify history clients
           screenClients.forEach(client => {
             if (client.screenType === "history" && client.readyState === WebSocket.OPEN) {
@@ -58,20 +78,23 @@ wss.on("connection", (ws, req) => {
   });
 });
 
+// === Upgrade WebSocket ===
 server.on("upgrade", (request, socket, head) => {
   wss.handleUpgrade(request, socket, head, (ws) => {
     wss.emit("connection", ws, request);
   });
 });
 
+// === API: New order ===
 app.post("/order", (req, res) => {
   const { amount, message } = req.body;
   const orderNumber = Math.floor(Math.random() * 100000);
   const orderData = { orderNumber, amount, message, completed: false };
 
-  pastOrders.push(orderData); // äldsta order längst bak
+  pastOrders.push(orderData);
+  saveOrders(); // <-- spara direkt
 
-  // Skicka nya order till screen1 – append längst ner på klienten
+  // Skicka till alla screen1-klienter
   screenClients.forEach(client => {
     if (client.readyState === WebSocket.OPEN && client.screenType === "screen1") {
       client.send(JSON.stringify(orderData));
@@ -81,11 +104,13 @@ app.post("/order", (req, res) => {
   res.json({ status: "success", orderNumber });
 });
 
-// Clear all completed orders
+// === API: Clear history ===
 app.post("/clear-history", (req, res) => {
   pastOrders = pastOrders.filter(order => !order.completed);
+  saveOrders(); // <-- spara ändringen
+
   screenClients.forEach(client => {
-    if (client.screenType === "history" && client.readyState === WebSocket.OPEN){
+    if (client.screenType === "history" && client.readyState === WebSocket.OPEN) {
       client.send(JSON.stringify({ type: "clear" }));
     }
   });
