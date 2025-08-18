@@ -41,11 +41,11 @@ wss.on("connection", (ws, req) => {
   ws.screenType = params.get("type"); // screen1, history
   screenClients.push(ws);
 
-  // Skicka gamla ordrar i rätt ordning
+  // Skicka gamla ordrar i rätt ordning (äldst → nyast)
   pastOrders.forEach(order => {
     if (ws.readyState === WebSocket.OPEN) {
       if (ws.screenType === "screen1" && !order.completed) {
-        ws.send(JSON.stringify(order)); // äldsta först
+        ws.send(JSON.stringify(order));
       } else if (ws.screenType === "history" && order.completed) {
         ws.send(JSON.stringify(order));
       }
@@ -59,7 +59,7 @@ wss.on("connection", (ws, req) => {
         const order = pastOrders.find(o => o.orderNumber === data.orderNumber);
         if (order) {
           order.completed = true;
-          saveOrders(); // <-- spara ändringen
+          saveOrders();
           // Notify history clients
           screenClients.forEach(client => {
             if (client.screenType === "history" && client.readyState === WebSocket.OPEN) {
@@ -92,7 +92,7 @@ app.post("/order", (req, res) => {
   const orderData = { orderNumber, amount, message, completed: false };
 
   pastOrders.push(orderData);
-  saveOrders(); // <-- spara direkt
+  saveOrders();
 
   // Skicka till alla screen1-klienter
   screenClients.forEach(client => {
@@ -101,13 +101,19 @@ app.post("/order", (req, res) => {
     }
   });
 
+  // === 🔜 Swish integration här ===
+  // Här kan du lägga in logik som:
+  // 1. Skapar ett Swish Payment Request
+  // 2. Returnerar QR-kod till frontend
+  // res.json({ status: "success", orderNumber, qrUrl });
+
   res.json({ status: "success", orderNumber });
 });
 
 // === API: Clear history ===
 app.post("/clear-history", (req, res) => {
   pastOrders = pastOrders.filter(order => !order.completed);
-  saveOrders(); // <-- spara ändringen
+  saveOrders();
 
   screenClients.forEach(client => {
     if (client.screenType === "history" && client.readyState === WebSocket.OPEN) {
@@ -116,3 +122,10 @@ app.post("/clear-history", (req, res) => {
   });
   res.json({ status: "success" });
 });
+
+// === 🔜 API: Swish Callback ===
+// app.post("/swish-callback", (req, res) => {
+//   console.log("Swish betalning klar:", req.body);
+//   // Hitta order och markera som completed
+//   res.sendStatus(200);
+// });
