@@ -21,18 +21,28 @@ let screenClients = [];
 let pastOrders = [];
 const filePath = path.join(__dirname, "orders.json");
 
-if (fs.existsSync(filePath)) {
+// Om filen inte finns, skapa den med tom array
+if (!fs.existsSync(filePath)) {
+  fs.writeFileSync(filePath, JSON.stringify([], null, 2));
+  console.log("orders.json created!");
+} else {
   try {
     pastOrders = JSON.parse(fs.readFileSync(filePath, "utf-8"));
     console.log("Orders loaded from file:", pastOrders.length);
   } catch (err) {
     console.error("Error reading orders.json:", err);
+    pastOrders = [];
   }
 }
 
-// === Save orders to file ===
+// === Save orders to file med felhantering ===
 function saveOrders() {
-  fs.writeFileSync(filePath, JSON.stringify(pastOrders, null, 2));
+  try {
+    fs.writeFileSync(filePath, JSON.stringify(pastOrders, null, 2));
+    console.log("Orders saved. Total orders:", pastOrders.length);
+  } catch (err) {
+    console.error("Error saving orders:", err);
+  }
 }
 
 // === WebSocket logic ===
@@ -101,12 +111,6 @@ app.post("/order", (req, res) => {
     }
   });
 
-  // === 🔜 Swish integration här ===
-  // Här kan du lägga in logik som:
-  // 1. Skapar ett Swish Payment Request
-  // 2. Returnerar QR-kod till frontend
-  // res.json({ status: "success", orderNumber, qrUrl });
-
   res.json({ status: "success", orderNumber });
 });
 
@@ -123,9 +127,8 @@ app.post("/clear-history", (req, res) => {
   res.json({ status: "success" });
 });
 
-// === 🔜 API: Swish Callback ===
+// === Swish Callback placeholder ===
 // app.post("/swish-callback", (req, res) => {
 //   console.log("Swish betalning klar:", req.body);
-//   // Hitta order och markera som completed
 //   res.sendStatus(200);
 // });
