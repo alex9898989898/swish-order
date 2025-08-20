@@ -17,31 +17,32 @@ const server = app.listen(port, () => {
 const wss = new WebSocket.Server({ noServer: true });
 let screenClients = [];
 
-// === Load orders from file when server starts ===
-let pastOrders = [];
+// === Path to orders.json ===
 const filePath = path.join(__dirname, "orders.json");
 
-// Om filen inte finns, skapa den med tom array
-if (!fs.existsSync(filePath)) {
-  fs.writeFileSync(filePath, JSON.stringify([], null, 2));
-  console.log("orders.json created!");
-} else {
-  try {
+// === Load orders from file when server starts ===
+let pastOrders = [];
+try {
+  if (fs.existsSync(filePath)) {
     pastOrders = JSON.parse(fs.readFileSync(filePath, "utf-8"));
     console.log("Orders loaded from file:", pastOrders.length);
-  } catch (err) {
-    console.error("Error reading orders.json:", err);
+  } else {
+    fs.writeFileSync(filePath, "[]", "utf-8");
     pastOrders = [];
+    console.log("Created new orders.json file");
   }
+} catch (err) {
+  console.error("Error reading orders.json:", err);
+  pastOrders = [];
 }
 
-// === Save orders to file med felhantering ===
+// === Save orders to file ===
 function saveOrders() {
   try {
-    fs.writeFileSync(filePath, JSON.stringify(pastOrders, null, 2));
-    console.log("Orders saved. Total orders:", pastOrders.length);
+    fs.writeFileSync(filePath, JSON.stringify(pastOrders, null, 2), "utf-8");
+    console.log("Orders saved:", pastOrders.length);
   } catch (err) {
-    console.error("Error saving orders:", err);
+    console.error("Failed to save orders:", err);
   }
 }
 
@@ -51,7 +52,7 @@ wss.on("connection", (ws, req) => {
   ws.screenType = params.get("type"); // screen1, history
   screenClients.push(ws);
 
-  // Skicka gamla ordrar i rätt ordning (äldst → nyast)
+  // Send old orders to the new client
   pastOrders.forEach(order => {
     if (ws.readyState === WebSocket.OPEN) {
       if (ws.screenType === "screen1" && !order.completed) {
@@ -70,6 +71,7 @@ wss.on("connection", (ws, req) => {
         if (order) {
           order.completed = true;
           saveOrders();
+
           // Notify history clients
           screenClients.forEach(client => {
             if (client.screenType === "history" && client.readyState === WebSocket.OPEN) {
@@ -104,7 +106,7 @@ app.post("/order", (req, res) => {
   pastOrders.push(orderData);
   saveOrders();
 
-  // Skicka till alla screen1-klienter
+  // Send to all screen1 clients
   screenClients.forEach(client => {
     if (client.readyState === WebSocket.OPEN && client.screenType === "screen1") {
       client.send(JSON.stringify(orderData));
@@ -124,11 +126,12 @@ app.post("/clear-history", (req, res) => {
       client.send(JSON.stringify({ type: "clear" }));
     }
   });
+
   res.json({ status: "success" });
 });
 
-// === Swish Callback placeholder ===
+// === API: Swish Callback (optional) ===
 // app.post("/swish-callback", (req, res) => {
-//   console.log("Swish betalning klar:", req.body);
+//   console.log("Swish payment completed:", req.body);
 //   res.sendStatus(200);
 // });
