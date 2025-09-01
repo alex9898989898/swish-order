@@ -180,6 +180,7 @@ app.post("/swish-callback", (req, res) => {
       }
     });
   }
+  
 
   res.sendStatus(200); // Must respond 200 OK
 });
