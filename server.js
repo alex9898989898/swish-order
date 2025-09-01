@@ -3,6 +3,8 @@ const bodyParser = require("body-parser");
 const WebSocket = require("ws");
 const path = require("path");
 const fs = require("fs");
+const https = require("https");
+const axios = require("axios");
 
 const app = express();
 const port = 3000;
@@ -17,33 +19,22 @@ const server = app.listen(port, () => {
 const wss = new WebSocket.Server({ noServer: true });
 let screenClients = [];
 
-// === Path to orders.json ===
-const filePath = path.join(__dirname, "orders.json");
-
 // === Load orders from file when server starts ===
 let pastOrders = [];
-try {
-  if (fs.existsSync(filePath)) {
+const filePath = path.join(__dirname, "orders.json");
+
+if (fs.existsSync(filePath)) {
+  try {
     pastOrders = JSON.parse(fs.readFileSync(filePath, "utf-8"));
     console.log("Orders loaded from file:", pastOrders.length);
-  } else {
-    fs.writeFileSync(filePath, "[]", "utf-8");
-    pastOrders = [];
-    console.log("Created new orders.json file");
+  } catch (err) {
+    console.error("Error reading orders.json:", err);
   }
-} catch (err) {
-  console.error("Error reading orders.json:", err);
-  pastOrders = [];
 }
 
 // === Save orders to file ===
 function saveOrders() {
-  try {
-    fs.writeFileSync(filePath, JSON.stringify(pastOrders, null, 2), "utf-8");
-    console.log("Orders saved:", pastOrders.length);
-  } catch (err) {
-    console.error("Failed to save orders:", err);
-  }
+  fs.writeFileSync(filePath, JSON.stringify(pastOrders, null, 2));
 }
 
 // === WebSocket logic ===
@@ -52,7 +43,7 @@ wss.on("connection", (ws, req) => {
   ws.screenType = params.get("type"); // screen1, history
   screenClients.push(ws);
 
-  // Send old orders to the new client
+  // Send old orders to new client
   pastOrders.forEach(order => {
     if (ws.readyState === WebSocket.OPEN) {
       if (ws.screenType === "screen1" && !order.completed) {
@@ -71,7 +62,6 @@ wss.on("connection", (ws, req) => {
         if (order) {
           order.completed = true;
           saveOrders();
-
           // Notify history clients
           screenClients.forEach(client => {
             if (client.screenType === "history" && client.readyState === WebSocket.OPEN) {
@@ -97,9 +87,49 @@ server.on("upgrade", (request, socket, head) => {
   });
 });
 
+// === Swish configuration ===
+const swishCertPath = "./SwishMerchantTestCertificate.p12";
+const swishCAPath = "./SwishTLSRootCA.pem";
+const swishCertPassword = "swish"; // Replace with your certificate password
+const swishMerchantNumber = "1234679304"; // Replace with your Swish merchant number
+const swishCallbackUrl = "https://yourserver.com/swish-callback"; // HTTPS required
+
+async function createSwishPayment(order) {
+  const instructionUUID = order.orderNumber.toString();
+  const paymentRequest = {
+    payeeAlias: swishMerchantNumber,
+    amount: order.amount,
+    currency: "SEK",
+    payeePaymentReference: order.orderNumber.toString(),
+    callbackUrl: swishCallbackUrl,
+    message: order.message,
+    callbackIdentifier: instructionUUID
+  };
+
+  try {
+    const response = await axios.put(
+      `https://mss.cpc.getswish.net/swish-cpcapi/api/v2/paymentrequests/${instructionUUID}`,
+      paymentRequest,
+      {
+        httpsAgent: new https.Agent({
+          pfx: fs.readFileSync(swishCertPath),
+          passphrase: swishCertPassword,
+          ca: fs.readFileSync(swishCAPath)
+        }),
+        headers: { "Content-Type": "application/json" }
+      }
+    );
+
+    return response.headers.location; // Swish payment URL / QR
+  } catch (error) {
+    console.error("Swish payment error:", error.response?.data || error.message);
+    return null;
+  }
+}
+
 // === API: New order ===
-app.post("/order", (req, res) => {
-  const { amount, message } = req.body;
+app.post("/order", async (req, res) => {
+  const { amount, message, payerAlias } = req.body;
   const orderNumber = Math.floor(Math.random() * 100000);
   const orderData = { orderNumber, amount, message, completed: false };
 
@@ -113,7 +143,10 @@ app.post("/order", (req, res) => {
     }
   });
 
-  res.json({ status: "success", orderNumber });
+  // Create Swish payment
+  const qrUrl = await createSwishPayment(orderData);
+
+  res.json({ status: "success", orderNumber, qrUrl });
 });
 
 // === API: Clear history ===
@@ -130,8 +163,23 @@ app.post("/clear-history", (req, res) => {
   res.json({ status: "success" });
 });
 
-// === API: Swish Callback (optional) ===
-// app.post("/swish-callback", (req, res) => {
-//   console.log("Swish payment completed:", req.body);
-//   res.sendStatus(200);
-// });
+// === API: Swish Callback ===
+app.post("/swish-callback", (req, res) => {
+  const callbackData = req.body;
+  console.log("Swish callback received:", callbackData);
+
+  const order = pastOrders.find(o => o.orderNumber.toString() === callbackData.callbackIdentifier);
+  if (order) {
+    order.completed = true;
+    saveOrders();
+
+    // Notify history clients
+    screenClients.forEach(client => {
+      if (client.screenType === "history" && client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify(order));
+      }
+    });
+  }
+
+  res.sendStatus(200); // Must respond 200 OK
+});
